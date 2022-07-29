@@ -21,6 +21,7 @@ object Partitions extends App {
     .write
     .format("csv")
     .mode(SaveMode.Overwrite)
+    .option("header","true")
     .save("src/main/resources/data/2019-october-02")
 
 
@@ -32,5 +33,6 @@ object Partitions extends App {
     .write
     .format("csv")
     .mode(SaveMode.Overwrite)
+    .option("header","true")
     .save("src/main/resources/data/2020-february-02")
 }
