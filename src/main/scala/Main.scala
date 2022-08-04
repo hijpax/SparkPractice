@@ -1,13 +1,9 @@
 import Reader.readDF
+import org.apache.spark.sql.SaveMode
 import org.apache.spark.sql.functions._
 
 object Main extends App {
-  val octDF = readDF("2019-Oct.csv") //Dataset of events in October 2019
-  val novDF = readDF("2019-Nov.csv") //Dataset of events in November 2019
-  val decDF = readDF("2019-Dec.csv") //Dataset of events in December 2019
-
-  //Union all data
-  val events2019DF = octDF.union(novDF)
+  val events2019DF = readDF("2019-*.csv") //Dataset of events from October 2019 to December 2019
 
   // 10 best selling products
   events2019DF
@@ -16,6 +12,10 @@ object Main extends App {
     .agg(count("*").as("sales"))
     .orderBy(col("sales").desc_nulls_last)
     .limit(10)
+    .write
+    .format("csv")
+    .mode(SaveMode.Ignore)
+    .option("header","true")
 
   // 10 most viewed products with their sales
   events2019DF
