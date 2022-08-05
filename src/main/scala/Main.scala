@@ -1,64 +1,46 @@
-import Reader.readDF
-import org.apache.spark.sql.SaveMode
-import org.apache.spark.sql.functions._
+import InsightsGenerator.generateInsights
+import Reader.generateSample
+import org.apache.spark.sql.AnalysisException
 
+import java.io.FileNotFoundException
+import scala.util.{Failure, Success, Try}
+
+//TODO Handle nulls
 object Main extends App {
-  val events2019DF = readDF("2019-*.csv") //Dataset of events from October 2019 to December 2019
+  println("\n\t\t<------ eCommerce behavior data Analysis Project ------>")
 
-  // 10 best selling products
-  events2019DF
-    .where(col("event_type") === "purchase" )
-    .groupBy("product_id","brand")
-    .agg(count("*").as("sales"))
-    .orderBy(col("sales").desc_nulls_last)
-    .limit(10)
-    .write
-    .format("csv")
-    .mode(SaveMode.Ignore)
-    .option("header","true")
+  //Get the success message after execute the generating reports process
+  var message:Try[String] = Try(generateInsights(getPath))
 
-  // 10 most viewed products with their sales
-  events2019DF
-    .where(col("event_type") === "view" )
-    .groupBy("product_id","brand")
-    .agg(count("*").as("views"))
-    .orderBy(col("views").desc_nulls_last)
-    .limit(10)
+  message match {
+    case Success(msg:String) => {
+      println(msg)
+      println(s"\nIrene Delgado, August 2022")
+    }
+    case Success(p) => println(s"Path is $p")
+    case Failure(e:ArrayIndexOutOfBoundsException) => {
+      println("\nError: Not enough arguments specified.")
+      printInstructions()
+    }
+    case Failure(e:IllegalArgumentException) => {
+      println("\nError: Argument type incorrect.")
+      printInstructions()
+    }
+    case Failure(e:AnalysisException) => {
+      println(e.getMessage())
+      printInstructions()
+    }
+    case Failure(e) => print(e.getMessage)
+  }
 
-  // 10 days with the most interactions (events)
-  events2019DF
-    .withColumn("event_date",to_date(col("event_time")))
-    .groupBy("event_date")
-    .agg(count("*").as("interactions"))
-    .orderBy(col("interactions").desc_nulls_last)
-    .limit(10)
+  def printInstructions(): Unit = {
+    println("\nPlease review the arguments and try again with the correct format:\n")
+    println("\t1- The source path of the dataset (the folder of one or more csv files)\n\t2- If it is a sample: 'true' or 'false'")
+    System.exit(1)
+  }
 
-  // 5 best-selling product categories
-  events2019DF
-    .where(col("event_type") === "purchase")
-    .groupBy("category_id","category_code")
-    .agg(count("*").as("sales"))
-    .orderBy(col("sales").desc_nulls_last)
-    .limit(5)
-
-  // 5 brands with more interaction
-  events2019DF
-    .groupBy("brand")
-    .agg(count("*").as("interactions"))
-    .orderBy(col("interactions").desc_nulls_last)
-    .limit(5)
-
-  // Interactions avg according to days of the week (Monday - Sunday)
-  events2019DF
-    .groupBy(col("event_time"))
-    .agg(count("event_time").as("temp_count"))
-    .withColumn("day",date_format(col("event_time"),"EEEE"))
-    .groupBy(col("day"))
-    .agg(
-      count("*").as("interactions"),
-      avg("temp_count").as("avg_interactions")
-    )
-    .orderBy(col("interactions").desc_nulls_last)
-    .show()
-
+  //Define the path of the container folder of the dataset sample
+  def getPath:String =
+    if (!args(1).toBoolean) generateSample(args(0), "*.csv") //If the path is the whole dataset, generate an sample and return the path
+    else args(0) //Return the sample's path
 }
