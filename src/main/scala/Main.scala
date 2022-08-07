@@ -5,9 +5,8 @@ import org.apache.spark.sql.AnalysisException
 import java.io.FileNotFoundException
 import scala.util.{Failure, Success, Try}
 
-//TODO Handle nulls
 object Main extends App {
-  println("\n\t\t<------ eCommerce behavior data Analysis Project ------>")
+  println("\n\t\t<------ Big Data project of an eCommerce behavior dataset ------>")
 
   //Get the success message after execute the generating reports process
   var message:Try[String] = Try(generateInsights(getPath))
@@ -27,6 +26,7 @@ object Main extends App {
       printInstructions()
     }
     case Failure(e:AnalysisException) => {
+      println("An error occurred while processing the report. ")
       println(e.getMessage())
       printInstructions()
     }

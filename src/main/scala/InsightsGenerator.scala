@@ -1,34 +1,23 @@
 import Reader.readDF
 import org.apache.spark.sql.{DataFrame, SaveMode}
-import org.apache.spark.sql.functions.{avg, col, count, date_format, to_date}
+import org.apache.spark.sql.functions._
 
 object InsightsGenerator {
   def generateInsights(path: String): String = {
 
-    val events2019DF = readDF(path, "*.csv") //Read all file of the dataset
+    val events2019DF = readDF(path, "parquet","*") //Read all file of the dataset
+    val totalRows = events2019DF.count()
 
     // 10 best selling products
     var df = events2019DF
-      .where(col("event_type") === "purchase")
       .groupBy("product_id", "brand")
-      .agg(count("*").as("sales"))
-      .orderBy(col("sales").desc_nulls_last)
+      .pivot("event_type")
+      .count()
+      .withColumn("sales_views_relation",round(col("purchase")/col("view"),3))
+      .orderBy(col("purchase").desc_nulls_last)
       .limit(10)
 
-    saveResult(df, path, "10-best-selling-products")
-
-    /** *
-     * TODO - add sales of the products in this query
-     */
-    // 10 most viewed products with their sales
-    df = events2019DF
-      .where(col("event_type") === "view")
-      .groupBy("product_id", "brand")
-      .agg(count("*").as("views"))
-      .orderBy(col("views").desc_nulls_last)
-      .limit(10)
-
-    saveResult(df, path, "10-most-viewed-products-with-their-sales")
+    saveResult(df, path, "10-best-selling-products-with-their-sales-views-relation")
 
 
     // 10 days with the most interactions (events)
@@ -53,8 +42,10 @@ object InsightsGenerator {
 
     // 5 brands with more interaction
     df = events2019DF
+      .where("brand != 'unknown'")
       .groupBy("brand")
       .agg(count("*").as("interactions"))
+      .withColumn("percentage",round(col("interactions")/totalRows*100,2))
       .orderBy(col("interactions").desc_nulls_last)
       .limit(5)
 
@@ -62,23 +53,17 @@ object InsightsGenerator {
 
     // Interactions avg according to days of the week (Monday - Sunday)
     df = events2019DF
-      .groupBy(col("event_time"))
+      .groupBy(col("event_time"),col("event_type"))
       .agg(count("event_time").as("temp_count"))
       .withColumn("day", date_format(col("event_time"), "EEEE"))
       .groupBy(col("day"))
+      .pivot("event_type")
       .agg(
-        count("*").as("interactions"),
-        avg("temp_count").as("avg_interactions")
+        round(avg("temp_count"),2).as("avg")
       )
-      .orderBy(col("interactions").desc_nulls_last)
+      .orderBy(col("purchase").desc_nulls_last)
 
     saveResult(df, path, "Interactions-avg-according-to-days-of-the-week")
-
-    // Relation views-sales for 10 most viewed products
-    // TODO - Relation views-sales for 10 most viewed products query
-
-    // Relation sales-views for 10 most selling products
-    // TODO - Relation sales-views for 10 most selling products query
 
     "\n\nReports save successfully."
   }
@@ -87,16 +72,16 @@ object InsightsGenerator {
     val destinationPath = s"$path/results/$insightName"
 
     println(s"\n\t\t<----- Report: $insightName ----->")
-    println(s"Saving file in: $destinationPath...")
 
+    println("Showing in console...")
+    df.show()
+
+    println(s"Saving file in: $destinationPath...")
     df
       .write
       .format("csv")
       .option("header", "true")
-      .mode(SaveMode.Ignore)
+      .mode(SaveMode.Overwrite)
       .save(destinationPath)
-
-    println("Showing in console...")
-    df.show()
   }
 }

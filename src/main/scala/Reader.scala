@@ -32,29 +32,33 @@ object Reader {
 
  // Read the file in format csv from the provided
  // if is not specified the schema, the default is used
-  def readDF(path:String,filename:String,schema:StructType=defaultEventSchema): DataFrame =
+  def readDF(path:String,format:String="parquet",filename:String,schema:StructType=defaultEventSchema): DataFrame =
       spark.read
+        .format(format)
         .schema(schema)
         .option("dateFormat", "YYYY-MM-dd HH:mm:ss z")
         .option("header", "true")
-        .csv(s"$path/$filename")
+        .load(s"$path/$filename")
 
   // Obtain a sample
   def generateSample(sourcePath:String,originFileName:String="2019-*.csv",fraction:Double = 0.1):String = {
 
-    println(s"generating a sample size of ${fraction*100}% of the data...")
+    println(s"generating a sample with ${fraction*100}% of the data...")
 
     val destinationPath = s"$sourcePath/sample"
 
     // Read the complete dataset from 3 files correspond to october, november and december at 2019
-    val eventsDF = readDF(sourcePath,originFileName)
+    val eventsDF = readDF(sourcePath,"csv",originFileName)
 
-    //Get a 10% sample to optimize performance insights analysis on my PC
+    //Get a 10% (default) sample to optimize performance insights analysis on my PC
     eventsDF.sample(fraction)
+      .na.fill(Map(
+        "unknown" -> "brand",
+        "not specified" -> "category_code"
+      ))
       .write
-      .format("csv")
+      .format("parquet")
       .mode(SaveMode.Ignore)
-      .option("header","true")
       .save(destinationPath)
 
     //Return the path of the sample
