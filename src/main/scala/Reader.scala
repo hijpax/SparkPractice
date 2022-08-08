@@ -12,6 +12,10 @@ object Reader {
     .appName("Spark Project")
     .getOrCreate()
 
+  //Set the partitions numbers, result of equation: stage input data/target size
+  // 20GB/ 200mb = 100
+  spark.conf.set("spark.sql.shuffle.partitions",100)
+
   val fs: FileSystem = FileSystem.get(spark.sparkContext.hadoopConfiguration)
   def fileExists(filePath:String): Try[Boolean] = Try(fs.exists(new Path(filePath)))
 
@@ -43,7 +47,7 @@ object Reader {
   // Obtain a sample
   def generateSample(sourcePath:String,originFileName:String="2019-*.csv",fraction:Double = 0.1):String = {
 
-    println(s"generating a sample with ${fraction*100}% of the data...")
+    println(s"generating a sample with ${fraction*100}% of the data \nand adding default values to null cells in columns 'category_code' and 'brand'...")
 
     val destinationPath = s"$sourcePath/sample"
 
@@ -53,12 +57,12 @@ object Reader {
     //Get a 10% (default) sample to optimize performance insights analysis on my PC
     eventsDF.sample(fraction)
       .na.fill(Map(
-        "unknown" -> "brand",
-        "not specified" -> "category_code"
+        "brand" -> "unknown",
+        "category_code" -> "not specified"
       ))
       .write
       .format("parquet")
-      .mode(SaveMode.Ignore)
+      .mode(SaveMode.Overwrite)
       .save(destinationPath)
 
     //Return the path of the sample

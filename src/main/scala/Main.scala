@@ -41,6 +41,6 @@ object Main extends App {
 
   //Define the path of the container folder of the dataset sample
   def getPath:String =
-    if (!args(1).toBoolean) generateSample(args(0), "*.csv") //If the path is the whole dataset, generate an sample and return the path
+    if (!args(1).toBoolean) generateSample(args(0), "*.csv",0.3) //If the path is the whole dataset, generate an sample and return the path
     else args(0) //Return the sample's path
 }
