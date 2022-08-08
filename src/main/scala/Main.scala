@@ -1,69 +1,46 @@
-import org.apache.spark.sql.{Dataset, SaveMode, SparkSession}
-import org.apache.spark.sql.functions._
+import InsightsGenerator.generateInsights
+import Reader.generateSample
+import org.apache.spark.sql.AnalysisException
 
-import java.sql.Timestamp
+import java.io.FileNotFoundException
+import scala.util.{Failure, Success, Try}
 
 object Main extends App {
+  println("\n\t\t<------ Big Data project of an eCommerce behavior dataset ------>")
 
-  val spark = SparkSession.builder()
-    .appName("Main")
-    .config("spark.master","local[*]")
-    .getOrCreate()
+  //Get the success message after execute the generating reports process
+  var message:Try[String] = Try(generateInsights(getPath))
 
+  message match {
+    case Success(msg:String) => {
+      println(msg)
+      println(s"\nIrene Delgado, August 2022")
+    }
+    case Success(p) => println(s"Path is $p")
+    case Failure(e:ArrayIndexOutOfBoundsException) => {
+      println("\nError: Not enough arguments specified.")
+      printInstructions()
+    }
+    case Failure(e:IllegalArgumentException) => {
+      println("\nError: Argument type incorrect.")
+      printInstructions()
+    }
+    case Failure(e:AnalysisException) => {
+      println("An error occurred while processing the report. ")
+      println(e.getMessage())
+      printInstructions()
+    }
+    case Failure(e) => print(e.getMessage)
+  }
 
-  def readDF(filename:String) = spark.read
-    .option("inferSchema",true)
-    .option("header","true")
-    .csv(s"src/main/resources/data/$filename")
+  def printInstructions(): Unit = {
+    println("\nPlease review the arguments and try again with the correct format:\n")
+    println("\t1- The source path of the dataset (the folder of one or more csv files)\n\t2- If it is a sample: 'true' or 'false'")
+    System.exit(1)
+  }
 
-  def writeDS[T](origin:Dataset[T],filename:String) = origin.write
-    .format("csv")
-    .mode(SaveMode.Overwrite)
-    .option("header","true")
-    .save(s"src/main/resources/data/$filename")
-
-
-  val eventsOctDF = readDF("2019-october-02")
-
-  val eventsFebDF = readDF("2020-february-02")
-
-  val eventsDF = eventsOctDF.union(eventsFebDF)
-
-
-  import spark.implicits._
-
-  case class Event(
-                    user_session:String,
-                    user_id:Long,
-                    date_time:Timestamp,
-                    event_type:String,
-                    product_id:Long,
-                    price:Double
-                  )
-
-  case class Product(
-                      id:Long,
-                      category_id:Long,
-                      category_code:Option[String],
-                      brand:Option[String]
-                    )
-
-
-  val eventsDS = eventsDF
-    .withColumn("date_time",to_timestamp(col("event_time"),"yyyy-MM-dd HH:mm:ss z"))
-    .select("event_type","date_time","user_id","user_session","product_id","price")
-    .as[Event]
-
-  val productsDS = eventsDF
-    .selectExpr("product_id as id","category_id","category_code","brand")
-    .distinct()
-    .as[Product]
-
-
-  writeDS(eventsDS,"events")
-
-  writeDS(productsDS,"products")
-
-  eventsDS.joinWith(productsDS,eventsDS.col("product_id") === productsDS.col("id"))
-
+  //Define the path of the container folder of the dataset sample
+  def getPath:String =
+    if (!args(1).toBoolean) generateSample(args(0), "*.csv",0.3) //If the path is the whole dataset, generate an sample and return the path
+    else args(0) //Return the sample's path
 }
