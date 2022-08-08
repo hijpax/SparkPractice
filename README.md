@@ -1,11 +1,11 @@
 # Big Data project of an eCommerce behavior dataset
-Este proyecto forma parte de las evaluaciones dentro del  Programa de Entrenamiento para Big Data Enginier de Applaudo Studios
+This project is part of the evaluations within the Big Data Scala Trainee Program of Applaudo Studios
 ## 1. Dataset Description
 ### 1.1 Source and description
-El Dataset utilizado contiene un total de 177,493,621 de registros, segmentados en tres archivos en formato csv, uno para cada mes entre Octubre y Diciembre del 2019. Puede consultar parte de los archivos publicados en [Kaggle](https://www.kaggle.com/datasets/mkechinov/ecommerce-behavior-data-from-multi-category-store) y el resto han sido compartidos mediante [Google Drvie](https://drive.google.com/drive/folders/1Nan8X33H8xrXS5XhCKZmSpClFTCJsSpE) por [Michael Kechinov](https://www.linkedin.com/in/mkechinov/?originalSubdomain=ru)
 
+The Dataset used contains a total of 177,493,621 records, segmented into three files in csv format, one for each month between October and December 2019. You can consult part of the files published in [Kaggle](https://www.kaggle.com/datasets/mkechinov/ecommerce-behavior-data-from-multi-category-store) and the rest have been shared via [Google Drvie](https://drive.google.com/drive/folders/1Nan8X33H8xrXS5XhCKZmSpClFTCJsSpE) by [Michael Kechinov](https://www.linkedin.com/in/mkechinov/?originalSubdomain=ru)
 
-Cada registro representa un evento realizado por un usuario con respecto a un producto dentro de una sesion, la cual se representa por un hash unico, cada sesión puede contener muchos eventos. Each event is like many-to-many relation between products and users.
+Each record represents an event performed by a user regarding a product within a session, which is represented by a unique hash, each session can contain many events. Each event is like many-to-many relation between products and users.
 #### File Structure
 |    Column     | Description                                                                                                                                                      |
 |:-------------:|------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -33,17 +33,17 @@ Semantics (or how to read it):
 
 ### 1.2 EDA report
 #### Obtencion de la muestra
-Los resultados del EDA se han obtenido de una muestra del 10% extraida mediante la funcion ``generateSample`` (ver [Reader](https://github.com/hijpax/SparkPractice/blob/main/src/main/scala/Reader.scala)) la cual recibe como parametros el path del dataset original, el nombre del archivo y la fraccion de muestreo. En las secciones siguientes se presentan más detalles sobre esta funcion.
+The EDA results have been obtained from a 10% sample extracted using the function ``generateSample`` (see [Reader](https://github.com/hijpax/SparkPractice/blob/main/src/main/scala/Reader.scala)) which receives as parameters the path of the original dataset, the name of the file and the sampling fraction. More details about this feature are presented in the following sections.
 
 #### Script
-El reporte de Exploratory Data Analysis se obtuvo con ayuda de la libreria [DataPrep](https://dataprep.ai/) apoyada en [Dask](https://www.dask.org/).
+The Exploratory Data Analysis report was obtained with the help of the library [DataPrep](https://dataprep.ai/) supported by [Dask](https://www.dask.org/).
 
-El script trabaja de la siguiente forma:
-1. Por medio función ``read_parquet`` (del componente dask.dataframe) se leen los archivos en formato parquet, especificando el *sourcePath* como parametro. Se obtiene un dataframe (``df``).
-2. A partir del dataframe obtenido, se utiliza la funcion ``create_report`` del componente ``dataprep.eda`` para generar el reporte EDA.
-3. Si se utiliza un notebook como Jupyter o Google Colab, se pude mostrar directamente el resultado, simplemente con invocar la variable ``report``
-4. ``show_browser()`` permite abrir el reporte en el navegador.
-5. Finalmente, por medio de la funcion ``save`` se puede especificar una ruta para guardar el resultado con formato html.
+The script works as follows:
+1. Through the ``read_parquet`` function (of the *dask.dataframe* component) the files are read in parquet format, specifying the *sourcePath* as a parameter. Get a dataframe (``df``).
+2. From the obtained dataframe, the ``create_report`` function of the ``dataprep.eda`` component is used to generate the EDA report.
+3. If you use a notebook such as Jupyter or Google Colab, you can directly display the result, simply by calling the ``report`` variable.
+4. ``show_browser()`` allows you to open the report in the browser.
+5. Finally, through the ``save`` function you can specify a path to save the result in html format.
 
 ```python
 import dask.dataframe as dd
@@ -56,35 +56,35 @@ report.show_browser()
 report.save('C:/data/report.html')
 ```
 
-### Results
-En la siguientes imagenes se observa la seccion de *Overview* del Reporte EDA, en la que podemos destacar lo siguiente:
-- La cantidad de columnas detectadas y analizadas es 9 y la cantidad de registros de la muestra es de aproximadamente 17,754,000 ( $1.775*10^7$ ) rows. 
-- Las missing cells equivalen a un 4.1%, es apeas eceptable para un margen de error del 5%. Se debe tomar en cuenta que este porcentaje es apartir del total de celdas, por lo que el total de rows con missing data podria aumentar o disminuir en el analisis de cada columna. 
-- La cantidad de rows duplicadas es de 5005 (menos del 1%), tomando en cuenta que cada evento representa una accion del usuario en un momento con exactitud de segundos, esto represena posibles incidentes al momento de regitrar en la BD; como por ejemplo la conexion de red en la comunicacion cliente-servidor y servidor-DB (doble envio de peticiones).
-- Se nos muestra el total size de la data en memoria al procesarla y algo a tomar en cuenta es el valor promedio de row size.
-- Se presentan 5 variables categoricas y 4 numericas para tomar en cuenta su formateo y tratamiento.
+#### Results
+The following images show the *Overview* section of the EDA Report, in which we can highlight the following:
+- The number of columns detected and analyzed is 9 and the number of records in the sample is approximately 17,754,000 ( $1,775*10^7$ ) rows.
+- The missing cells are equivalent to 4.1%, which is barely acceptable for a margin of error of 5%. It should be taken into account that this percentage is based on the total number of cells, so the total number of rows with missing data could increase or decrease in the analysis of each column.
+- The number of duplicate rows is 5005 (less than 1%), taking into account that each event represents a user action at a time with exact seconds, this represents possible incidents when registering in the DB; such as the network connection in client-server and server-DB communication (double sending of requests).
+- We are shown the total size of the data in memory when processing it and something to take into account is the average value of row size.
+- 5 categorical and 4 numerical variables are presented to take into account their formatting and treatment.
 
 <figure>
     <img src="./img/EDA_report_overview_1.png" width="450" height="auto"/>
-    <figcaption>Dataset Statistics. Seccion de *Overview* from the EDA Report with DataPrep.</figcaption>
+    <figcaption>Dataset Statistics. <i>Overview</i> section from the EDA Report with DataPrep.</figcaption>
 </figure>
 
-- The *Dataset Insights* sections presents a summary of each column.
-- The *category_code* column tiene un 23.94% de missing values, por lo que si se decidiera borrar cada una de las rows que presentan esos valores nullos, estariamos hablando de acortar la cuarta parte del dataset.
-- The *brand* colunm posee un 13.21% de missing values, tomando en cuenta que tanto esta propiedad como el *category_code* no representan impedimento para que las rows con esos valores nulos tengan significado como si lo serian, por ejemplo, *event_type* o *event_time*; se puede proceder a reemplazarlos con un valor como *undefined* o *not specified*.
-- Se senalan tambien que columnas son skewed y cuales poseen una alta cardinalidad.
+- The *Dataset Insights* section presents a summary of each column.
+- The *category_code* column has 23.94% of missing values, so if we decided to delete each of the rows that have those null values, we would be talking about shortening the fourth part of the dataset.
+- The *brand* column has a 13.21% of missing values, taking into account that both this property and the *category_code* do not represent an impediment for the rows with those null values to have meaning as if they would be, for example, *event_type* or *event_time*; you can proceed to replace them with a value like *undefined* or *not specified*.
+- It is also pointed out which columns are skewed and which have a high cardinality.
 
 <figure>
 <img src="./img/EDA_report_overview_2.png" width="450" height="auto"/>
-<figcaption>Dataset Insights. Seccion de *Overview* from the EDA Report with DataPrep.</figcaption>
+<figcaption>Dataset Insights. <i>Overview</i> section from the EDA Report with DataPrep.</figcaption>
 </figure>
 
 <figure>
 <img src="./img/EDA_report_overview_3.png" width="450" height="auto"/>
-<figcaption>Dataset Insights. Seccion de *Overview* from the EDA Report with DataPrep.</figcaption>
+<figcaption>Dataset Insights. <i>Overview</i> section from the EDA Report with DataPrep.</figcaption>
 </figure>
 
-El reporte completo se encuentra en la carpeta [data-profiling](./data-profiling)
+The full report is in the folder [data-profiling](./data-profiling)
 ## 2. Environment
 
 ## 3. How to execute the solution?
