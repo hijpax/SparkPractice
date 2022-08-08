@@ -1,8 +1,6 @@
 import org.apache.spark.sql.{DataFrame, SaveMode, SparkSession}
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.spark.sql.types._
-import org.apache.log4j.{Level, Logger}
-
 import scala.util.Try
 
 object Reader {
@@ -47,15 +45,15 @@ object Reader {
   // Obtain a sample
   def generateSample(sourcePath:String,originFileName:String="2019-*.csv",fraction:Double = 0.1):String = {
 
+    // Read the complete dataset from 3 files correspond to october, november and december at 2019
+    val eventsDF = readDF(sourcePath,"csv",originFileName)
+
     println(s"\nTotal rows in original dataset: ${eventsDF.count()} rows")
     println(s"\nGenerating a sample with ${fraction*100}% of the data \nand adding default values to null cells in columns 'category_code' and 'brand'...")
 
     val destinationPath = s"$sourcePath/sample"
 
-    // Read the complete dataset from 3 files correspond to october, november and december at 2019
-    val eventsDF = readDF(sourcePath,"csv",originFileName)
-
-    //Get a 10% (default) sample to optimize performance insights analysis on my PC
+    //Get a 10% (default) sample to optimize performance insights analysis on a PC
     eventsDF
       .distinct() //remove duplicate rows
       .sample(fraction)

@@ -5,7 +5,7 @@ import org.apache.spark.sql.functions._
 object InsightsGenerator {
   def generateInsights(path: String): String = {
 
-    val events2019DF = readDF(path, "parquet","*") //Read all file of the dataset
+    val events2019DF = readDF(path, "parquet","*") //Read all files of the dataset
     val totalRows = events2019DF.count()
 
     // 10 best selling products

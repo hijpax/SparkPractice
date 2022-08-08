@@ -33,7 +33,7 @@ Semantics (or how to read it):
 
 ### 1.2 EDA report
 #### Obtencion de la muestra
-The EDA results have been obtained from a 10% sample extracted using the function ``generateSample`` (see [Reader](https://github.com/hijpax/SparkPractice/blob/main/src/main/scala/Reader.scala)) which receives as parameters the path of the original dataset, the name of the file and the sampling fraction. More details about this feature are presented in the following sections.
+The EDA results have been obtained from a 10% sample extracted using the function ``generateSample`` (see [Reader](./src/main/scala/Reader.scala)) which receives as parameters the path of the original dataset, the name of the file and the sampling fraction. More details about this feature are presented in the following sections.
 
 #### Script
 The Exploratory Data Analysis report was obtained with the help of the library [DataPrep](https://dataprep.ai/) supported by [Dask](https://www.dask.org/).
@@ -64,25 +64,24 @@ The following images show the *Overview* section of the EDA Report, in which we 
 - We are shown the total size of the data in memory when processing it and something to take into account is the average value of row size.
 - 5 categorical and 4 numerical variables are presented to take into account their formatting and treatment.
 
-<figure>
-    <img src="./img/EDA_report_overview_1.png" width="450" height="auto"/>
-    <figcaption>Dataset Statistics. <i>Overview</i> section from the EDA Report with DataPrep.</figcaption>
-</figure>
+|              ![Overview-1](./img/EDA_report_overview_1.png)               |
+|:-------------------------------------------------------------------------:|
+| *Dataset Statistics. Overview section from the EDA Report with DataPrep.* |
+
+
 
 - The *Dataset Insights* section presents a summary of each column.
 - The *category_code* column has 23.94% of missing values, so if we decided to delete each of the rows that have those null values, we would be talking about shortening the fourth part of the dataset.
 - The *brand* column has a 13.21% of missing values, taking into account that both this property and the *category_code* do not represent an impediment for the rows with those null values to have meaning as if they would be, for example, *event_type* or *event_time*; you can proceed to replace them with a value like *undefined* or *not specified*.
 - It is also pointed out which columns are skewed and which have a high cardinality.
 
-<figure>
-<img src="./img/EDA_report_overview_2.png" width="450" height="auto"/>
-<figcaption>Dataset Insights. <i>Overview</i> section from the EDA Report with DataPrep.</figcaption>
-</figure>
+|             ![Overview-2](./img/EDA_report_overview_2.png)              |
+|:-----------------------------------------------------------------------:|
+| *Dataset Insights. Overview section from the EDA Report with DataPrep.* |
 
-<figure>
-<img src="./img/EDA_report_overview_3.png" width="450" height="auto"/>
-<figcaption>Dataset Insights. <i>Overview</i> section from the EDA Report with DataPrep.</figcaption>
-</figure>
+|             ![Overview-3](./img/EDA_report_overview_3.png)              |
+|:-----------------------------------------------------------------------:|
+| *Dataset Insights. Overview section from the EDA Report with DataPrep.* |
 
 The full report is in the folder [data-profiling](./data-profiling)
 ## 2. Environment
@@ -91,5 +90,91 @@ The full report is in the folder [data-profiling](./data-profiling)
 ### 3.1 Arguments
 ## 4. Dataset Insights and their reports 
 ## 5. Project structure
+The solution is composed of two objects ([Reader](./src/main/scala/Reader.scala) and [InsightsGenerator](./src/main/scala/InsightsGenerator.scala)) that host the functions used to start the application from the object [Main](./src/main/scala/Main.scala).
+
+- ``Rader.scala``. Within this, the only Spark session used in the application and the definition of the data schema is created, in addition, it continues the functions to read the data, create a dataframe and generate a sample.
+  - ``readDF`` receives as parameters the path of the source directory, the format of the files (csv, parquet, etc.) and their name, in addition to the scheme to use. Return a dataframe from the specified parameters. 
+  - ``generateSample`` this uses as arguments a source directory, the file name and the percentage of data to extract as a sample (range between 0.0 and 1.0), to read the files, eliminate duplicate records and, through the ``sample`` function , obtain a dataframe according to the specified sample size. Within this function, the null values of the *brand* and *category_code* columns are also replaced by the values *unknow* and *not specified* respectively, to finally write the results in parquet format, in a folder called *sample* within the same source directory. Returns the path of the directory containing the resulting sample.
+
+```scala
+def generateSample(sourcePath:String,originFileName:String="2019-*.csv",fraction:Double = 0.1):String = {
+  
+    val eventsDF = readDF(sourcePath,"csv",originFileName)
+
+    /* ... */
+
+    //Get a 10% (default) sample to optimize performance insights analysis on a PC
+    eventsDF
+      .distinct() //remove duplicate rows
+      .sample(fraction)
+      .na.fill(Map(
+        "brand" -> "unknown",
+        "category_code" -> "not specified"
+      ))
+      .write
+      .format("parquet")
+      .mode(SaveMode.Overwrite)
+      .save(destinationPath)
+
+    //Return the path of the sample
+    destinationPath
+}
+```
+
+- ``InsightsGenerator.scala``
+  - ``saveResult`` receives the parameters: the dataframe, destination directory path, and the name of the report, which it uses to display the results in the console and write them in *csv* format into a folder with the same name as the report in the specified directory.
+  - ``generateInsights`` takes care of reading the source data through ``readDF``, to then specify the queries for each insight and display/save their results through the ``saveResult`` function. Returns a success message at the end of the process.
+
+```scala
+def generateInsights(path: String): String = {
+
+    val events2019DF = readDF(path, "parquet","*") //Read all files of the dataset
+    val totalRows = events2019DF.count()
+
+    // 10 best selling products
+    var df = events2019DF
+      .groupBy("product_id", "brand")
+      .pivot("event_type")
+      .count()
+      .withColumn("sales_views_relation",round(col("purchase")/col("view"),3))
+      .orderBy(col("purchase").desc_nulls_last)
+      .limit(10)
+
+    saveResult(df, path, "10-best-selling-products-with-their-sales-views-relation")
+
+  /* ... */
+
+    "\n\nReports save successfully."
+  }
+```
+- ``Main.scala`` This object reads the *args* to get the origin path of the data and if it is a sample already prepared to generate the reports, otherwise it is responsible for generating it and uses the new path obtained to continue with the generation process. insights. Within this object is the error handling and, if needed, the instructions are printed on the console.
+  - ``getPath`` receives an array of strings, the first corresponds to a path of the directory that contains the data to be analyzed and the second specifies whether it belongs to a sample already prepared (*true*) or the complete dataset (*false*), in the latter case calls the ``generateSample`` function to generate a new sample. Returns the path of the directory that contains the data to use.
+
+```scala
+//Get the success message after execute the generating reports process
+  var message:Try[String] = Try(generateInsights(getPath(args)))
+
+  message match {
+    case Success(msg:String) => {
+      println(msg)
+      println(s"\nIrene Delgado, August 2022")
+    }
+    /* ... */
+    case Failure(e:AnalysisException) => {
+      println("An error occurred while processing the report. ")
+      println(e.getMessage())
+      printInstructions()
+    }
+    case Failure(e) => print(e.getMessage)
+  }
+
+  /* ... */
+
+  //Define the path of the container folder of the dataset sample
+  def getPath(args:Array[String]):String =
+    //If the path is the whole dataset, generate an sample and return the path
+    if (!args(1).toBoolean) generateSample(args(0), "*.csv",0.3) 
+    else args(0) //else return the original path
+```
 ## 6. Challenges during development
 ## 7. Comments
