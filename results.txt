@@ -1,0 +1,91 @@
+	<------ Big Data project of an eCommerce behavior dataset ------>
+
+generating a sample with 30.0% of the data
+and adding default values to null cells in columns 'category_code' and 'brand'...
+
+<----- Report: 10-best-selling-products-with-their-sales-views-relation ----->
+Showing in console...
++----------+-------+-----+--------+------+--------------------+
+|product_id|  brand| cart|purchase|  view|sales_views_relation|
++----------+-------+-----+--------+------+--------------------+
+|   1004856|samsung|64273|   28643|447536|               0.064|
+|   1004767|samsung|57882|   23512|469521|                0.05|
+|   1005115|  apple|42965|   18069|420334|               0.043|
+|   4804056|  apple|39470|   15673|231730|               0.068|
+|   1002544|  apple|24961|   12235|195761|               0.062|
+|   1005100|samsung|28861|   11343|193958|               0.058|
+|   1004870|samsung|27605|   10404|224874|               0.046|
+|   1004833|samsung|20784|    9476|168298|               0.056|
+|   1004249|  apple|19528|    8746|203343|               0.043|
+|   1005105|  apple|16790|    7894|216933|               0.036|
++----------+-------+-----+--------+------+--------------------+
+
+Saving file in: C:/data//sample/results/10-best-selling-products-with-their-sales-views-relation...
+
+		<----- Report: 10-days-with-the-most-interactions-(events) ----->
+Showing in console...
++----------+------------+
+|event_date|interactions|
++----------+------------+
+|2019-11-16|     1913794|
+|2019-11-15|     1830737|
+|2019-11-17|     1689637|
+|2019-11-14|     1226605|
+|2019-12-16|      921673|
+|2019-12-17|      893317|
+|2019-12-18|      849478|
+|2019-12-29|      820207|
+|2019-12-19|      814216|
+|2019-12-22|      814005|
++----------+------------+
+
+Saving file in: C:/data//sample/results/10-days-with-the-most-interactions-(events)...
+
+		<----- Report: 5-best-selling-product-categories ----->
+Showing in console...
++-------------------+--------------------+------+
+|        category_id|       category_code| sales|
++-------------------+--------------------+------+
+|2053013555631882655|electronics.smart...|218224|
+|2232732093077520756|construction.tool...|148518|
+|2053013553559896355|       not specified| 35069|
+|2053013554658804075|electronics.audio...| 26985|
+|2232732079706079299|       sport.bicycle| 16953|
++-------------------+--------------------+------+
+
+Saving file in: C:/data//sample/results/5-best-selling-product-categories...
+
+		<----- Report: 5-brands-with-more-interaction ----->
+Showing in console...
++-------+------------+----------+
+|  brand|interactions|percentage|
++-------+------------+----------+
+|samsung|     6508943|     12.23|
+|  apple|     4787696|      8.99|
+| xiaomi|     3878565|      7.29|
+| huawei|     1327320|      2.49|
+|lucente|      933683|      1.75|
++-------+------------+----------+
+
+Saving file in: C:/data//sample/results/5-brands-with-more-interaction...
+
+		<----- Report: Interactions-avg-according-to-days-of-the-week ----->
+Showing in console...
++---------+----+--------+----+
+|      day|cart|purchase|view|
++---------+----+--------+----+
+|   Sunday|1.47|    1.21|7.62|
+| Saturday|1.42|    1.14|7.37|
+|   Monday|1.27|    1.09|6.58|
+|  Tuesday|1.24|    1.08|6.35|
+| Thursday|1.35|    1.07|6.64|
+|Wednesday|1.22|    1.07|6.23|
+|   Friday|1.45|    1.07|7.31|
++---------+----+--------+----+
+
+Saving file in: C:/data//sample/results/Interactions-avg-according-to-days-of-the-week...
+
+
+Reports save successfully.
+
+Irene Delgado, August 2022
