@@ -47,7 +47,8 @@ object Reader {
   // Obtain a sample
   def generateSample(sourcePath:String,originFileName:String="2019-*.csv",fraction:Double = 0.1):String = {
 
-    println(s"generating a sample with ${fraction*100}% of the data \nand adding default values to null cells in columns 'category_code' and 'brand'...")
+    println(s"\nTotal rows in original dataset: ${eventsDF.count()} rows")
+    println(s"\nGenerating a sample with ${fraction*100}% of the data \nand adding default values to null cells in columns 'category_code' and 'brand'...")
 
     val destinationPath = s"$sourcePath/sample"
 
@@ -55,7 +56,9 @@ object Reader {
     val eventsDF = readDF(sourcePath,"csv",originFileName)
 
     //Get a 10% (default) sample to optimize performance insights analysis on my PC
-    eventsDF.sample(fraction)
+    eventsDF
+      .distinct() //remove duplicate rows
+      .sample(fraction)
       .na.fill(Map(
         "brand" -> "unknown",
         "category_code" -> "not specified"
