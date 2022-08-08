@@ -1,7 +1,7 @@
 import org.apache.spark.sql.{SaveMode, SparkSession}
 import org.apache.spark.sql.functions.{col, lit, to_date}
 
-object Partitions extends App {
+object Partitions {
   val spark = SparkSession.builder()
     .appName("Getting Data")
     .config("spark.master","local[*]")
