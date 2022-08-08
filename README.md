@@ -87,8 +87,87 @@ The full report is in the folder [data-profiling](./data-profiling)
 ## 2. Environment
 
 ## 3. How to execute the solution?
-### 3.1 Arguments
+
 ## 4. Dataset Insights and their reports 
+
+The reports have been obtained with a sample of 30% of the original dataset.
+
+### 4.1 Top 10 selling products and their sales views relation
+
+```scala
++----------+-------+-----+--------+------+--------------------+
+|product_id|  brand| cart|purchase|  view|sales_views_relation|
++----------+-------+-----+--------+------+--------------------+
+|   1004856|samsung|64182|   28631|447727|               0.064|
+|   1004767|samsung|58107|   23483|469107|                0.05|
+|   1005115|  apple|42581|   18391|420578|               0.044|
+|   4804056|  apple|39885|   15933|232602|               0.068|
+|   1002544|  apple|24662|   12145|195653|               0.062|
+|   1005100|samsung|28675|   11395|193823|               0.059|
+|   1004870|samsung|27745|   10582|224965|               0.047|
+|   1004833|samsung|20625|    9530|168320|               0.057|
+|   1004249|  apple|19692|    8880|203360|               0.044|
+|   1005105|  apple|16937|    7843|216721|               0.036|
++----------+-------+-----+--------+------+--------------------+
+```
+### 4.2 The 10 days with the most interactions (events)
+```scala
++----------+------------+
+|event_date|interactions|
++----------+------------+
+|2019-11-16|     1916591|
+|2019-11-15|     1831710|
+|2019-11-17|     1690072|
+|2019-11-14|     1227217|
+|2019-12-16|      921603|
+|2019-12-17|      893086|
+|2019-12-18|      848676|
+|2019-12-29|      820926|
+|2019-12-19|      814858|
+|2019-12-22|      814274|
++----------+------------+
+```
+
+### 4.3 Top 5 selling product categories
+```scala
++-------------------+--------------------+------+
+|        category_id|       category_code| sales|
++-------------------+--------------------+------+
+|2053013555631882655|electronics.smart...|218667|
+|2232732093077520756|construction.tool...|149961|
+|2053013553559896355|       not specified| 34617|
+|2053013554658804075|electronics.audio...| 27209|
+|2053013554415534427|electronics.video.tv| 17173|
++-------------------+--------------------+------+
+```
+### 4.4 The 5 brands with the most interaction
+```scala
++-------+------------+----------+
+|  brand|interactions|percentage|
++-------+------------+----------+
+|samsung|     6513225|     12.23|
+|  apple|     4793253|       9.0|
+| xiaomi|     3880800|      7.29|
+| huawei|     1329123|       2.5|
+|lucente|      932478|      1.75|
++-------+------------+----------+
+```
+
+### 4.5 Interactions avg according to days of the week
+```scala
++---------+----+--------+----+
+|      day|cart|purchase|view|
++---------+----+--------+----+
+|   Sunday|1.47|    1.21|7.63|
+| Saturday|1.42|    1.14|7.38|
+|   Monday|1.27|    1.09|6.59|
+|  Tuesday|1.24|    1.08|6.34|
+| Thursday|1.35|    1.07|6.64|
+|Wednesday|1.22|    1.07|6.23|
+|   Friday|1.45|    1.07|7.31|
++---------+----+--------+----+
+```
+
 ## 5. Project structure
 The solution is composed of two objects ([Reader](./src/main/scala/Reader.scala) and [InsightsGenerator](./src/main/scala/InsightsGenerator.scala)) that host the functions used to start the application from the object [Main](./src/main/scala/Main.scala).
 
