@@ -1,10 +1,11 @@
 import InsightsGenerator.generateInsights
 import Reader.generateSample
 import org.apache.spark.sql.AnalysisException
-
-import java.io.FileNotFoundException
 import scala.util.{Failure, Success, Try}
 
+/**
+ * Contains the starting point of the application. Show prompts to the user on the console and handle possible exceptions.
+ */
 object Main extends App {
   println("\n\t\t<------ Big Data project of an eCommerce behavior dataset ------>")
 
