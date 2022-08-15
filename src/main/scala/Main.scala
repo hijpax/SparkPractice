@@ -1,15 +1,16 @@
 import InsightsGenerator.generateInsights
 import Reader.generateSample
 import org.apache.spark.sql.AnalysisException
-
-import java.io.FileNotFoundException
 import scala.util.{Failure, Success, Try}
 
+/**
+ * Contains the starting point of the application. Show prompts to the user on the console and handle possible exceptions.
+ */
 object Main extends App {
   println("\n\t\t<------ Big Data project of an eCommerce behavior dataset ------>")
 
   //Get the success message after execute the generating reports process
-  var message:Try[String] = Try(generateInsights(getPath))
+  var message:Try[String] = Try(generateInsights(getPath(args)))
 
   message match {
     case Success(msg:String) => {
@@ -40,7 +41,7 @@ object Main extends App {
   }
 
   //Define the path of the container folder of the dataset sample
-  def getPath:String =
+  def getPath(args:Array[String]):String =
     if (!args(1).toBoolean) generateSample(args(0), "*.csv",0.3) //If the path is the whole dataset, generate an sample and return the path
-    else args(0) //Return the sample's path
+    else args(0) //else return the original path
 }
