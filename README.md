@@ -1,8 +1,8 @@
 # Big Data project of an eCommerce behavior dataset
 This project is part of the evaluations within the Big Data Scala Trainee Program of Applaudo Studios
 
-Por medio de este proyecto se busca obtener informacion clave para el area de marketing sobre el comportamiento de los consumidores detro de la plataforma de comercio electronico, con el fin principal de **crear estrategias de ventas**.
-Datos como las marcas y productos mas compradas, los dias de la semana que mas se realizan interacciones o el listado de usuarios que se quedan sin finalizar la compra, contribuiran a definir datos clave para la toma de decisiones en cuanto a medidas como la implementacion de mejoras de User Experience (UX) en la plataforma, mayor publicidad de productos estrella que no perciben el movimiento deseado o desarrollo completo de campanas comerciales dirigidas a potenciales clientes.
+Through this project, we seek to obtain key information for the marketing area on the behavior of consumers within the electronic commerce platform, with the main purpose of **creating sales strategies**.
+Data such as the most purchased brands and products, the days of the week with the most interactions or the list of users who remain without finalizing the purchase, will contribute to defining key data for decision-making regarding measures such as the implementation of User Experience (UX) improvements on the platform, more advertising of star products that do not perceive the desired movement or complete development of commercial campaigns aimed at potential customers.
 
 ## 1. Dataset Description
 ### 1.1 Source and description
@@ -89,12 +89,22 @@ The following images show the *Overview* section of the EDA Report, in which we 
 The full report is in the folder [data-profiling](./data-profiling)
 
 ### 1.3 Data Cleansing
+The process to clean the data is done within the ``generateSample`` function which is also described later.
+- Because the percentage of repeated values does not even reach 1%, they are eliminated
+- The missing values that are presented in the *category_code* and *brand* columns are replaced with *unknown* and *not specified* since deleting those rows would represent a considerable loss of records. In addition, the values of these columns do not affect much the desired reports because the semantic meaning of each record does not depend so much on them.
+- The column with timestamp values does not present malformed data, so it is only necessary to specify that the processes will be carried out in UTC format through the configuration specified in the ``Reader.scala`` object:
+```scala
+  //To perform patterns in dates
+  spark.conf.set("spark.sql.legacy.timeParserPolicy", "LEGACY")
 
-## 2. Environment
+  //Set the timezone
+  spark.conf.set("spark.sql.session.timeZone", "UTC")
+```
+- The required configuration has also been added from versions 3.x of spark to obtain *Legacy* behavior when using date formatting in certain reports.
 
-## 3. How to execute the solution?
+## 2. How to execute the solution?
 
-## 4. Dataset Insights and their reports 
+## 3. Dataset Insights and their reports 
 
 1. **What are the best-selling product categories (according to the number of events *"purchase"*)?**
 ```scala
@@ -583,7 +593,7 @@ df = purchaseEventsDF
       .orderBy(col("sales_product").desc)
       .limit(20)
 ```
-## 5. Project structure
+## 4. Project structure
 The solution is composed of two objects ([Reader](./src/main/scala/Reader.scala) and [InsightsGenerator](./src/main/scala/InsightsGenerator.scala)) that host the functions used to start the application from the object [Main](./src/main/scala/Main.scala).
 
 - ``Rader.scala``. Within this, the only Spark session used in the application and the definition of the data schema is created, in addition, it continues the functions to read the data, create a dataframe and generate a sample.
@@ -670,5 +680,5 @@ def generateInsights(path: String): String = {
     if (!args(1).toBoolean) generateSample(args(0), "*.csv",0.3) 
     else args(0) //else return the original path
 ```
-## 6. Challenges during development
-## 7. Comments
+## 5. Challenges during development
+## 6. Comments
