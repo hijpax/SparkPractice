@@ -8,7 +8,6 @@ lazy val root = (project in file("."))
   )
 
 val sparkVersion = "3.2.2"
-val postgresVersion = "42.3.6"
 
 resolvers ++= Seq(
   "bintray-spark-packages" at "https://dl.bintray.com/spark-packages/maven",
@@ -22,6 +21,5 @@ libraryDependencies ++= Seq(
   // logging
   "org.apache.logging.log4j" % "log4j-api" % "2.18.0" % "provided",
   "org.apache.logging.log4j" % "log4j-core" % "2.18.0" % "provided",
-  // postgres for DB connectivity
-  "org.postgresql" % "postgresql" % postgresVersion
+
 )
