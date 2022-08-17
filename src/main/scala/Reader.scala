@@ -13,6 +13,9 @@ object Reader {
     .appName("Spark Project")
     .getOrCreate()
 
+  //Set log Level
+  spark.sparkContext.setLogLevel("WARN")
+
   //To perform patterns in dates
   spark.conf.set("spark.sql.legacy.timeParserPolicy", "LEGACY")
 

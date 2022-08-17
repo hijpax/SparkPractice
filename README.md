@@ -1,10 +1,17 @@
 # Big Data project of an eCommerce behavior dataset
-This project is part of the evaluations within the Big Data Scala Trainee Program of Applaudo Studios
+[![Scala](https://img.shields.io/badge/Scala-2.13.8-DC322F?style=flat&logo=scala&logoColor=DC322F)](https://docs.scala-lang.org/)
+[![Apache Spark](https://img.shields.io/badge/Apache%20Spark-3.2.2-F55B14?style=flat&logo=apache&logoColor=F55B14)](https://spark.apache.org/docs/3.2.2/)
+[![Licence](https://img.shields.io/badge/Licencse-MIT-green?style=flat)](./LICENSE)
+<!--This project is part of the evaluations within the Big Data Scala Trainee Program of Applaudo Studios.-->
 
 Through this project, we seek to obtain key information for the marketing area on the behavior of consumers within the electronic commerce platform, with the main purpose of **creating sales strategies**.
 Data such as the most purchased brands and products, the days of the week with the most interactions or the list of users who remain without finalizing the purchase, will contribute to defining key data for decision-making regarding measures such as the implementation of User Experience (UX) improvements on the platform, more advertising of star products that do not perceive the desired movement or complete development of commercial campaigns aimed at potential customers.
 
+
 ## 1. Dataset Description
+
+------------------------------
+
 ### 1.1 Source and description
 
 The Dataset used contains a total of 177,493,621 records, segmented into three files in csv format, one for each month between October and December 2019. You can consult part of the files published in [Kaggle](https://www.kaggle.com/datasets/mkechinov/ecommerce-behavior-data-from-multi-category-store) and the rest have been shared via [Google Drvie](https://drive.google.com/drive/folders/1Nan8X33H8xrXS5XhCKZmSpClFTCJsSpE) by [Michael Kechinov](https://www.linkedin.com/in/mkechinov/?originalSubdomain=ru)
@@ -104,9 +111,28 @@ The process to clean the data is done within the ``generateSample`` function whi
 
 ## 2. How to execute the solution?
 
+----------------------------------
+
+### 2.1 Arguments
+- ``path``: The path directory of the files in csv format to read as the original dataset or a previously cleaned sample.
+- ``isSample``: It can be ``true`` or ``false`` and defines whether the path corresponds to a clean sample or the original dataset directory. If it is ``false`` the application execute a process to clean the data and get a 30% sample, prior to the report generation processes.
+
+### 2.2 Execution
+- **Local**: With a local installation of spark:
+```shell
+> spark-submit --master local[*] ./target/scala-2.13/sparkpractice_2.13-0.3.0.jar <path> <isSample>
+```
+- **Docker Cluster**: With the docker configuration of the RTJVM course:
+```shell
+> 
+```
+
+
 ## 3. Dataset Insights and their reports 
 
-1. **What are the best-selling product categories (according to the number of events *"purchase"*)?**
+-----------------------------------------
+
+### 3.1. What are the best-selling product categories (according to the number of events *"purchase"*)?
 ```scala
 +-------------------+--------------------+-----------------------+----------------+-----------------------+----------------------+--------------+------------------+
 |        category_id|       category_code|count_purchase_category|  sales_category|best_selling_product_id|count_purchase_product| sales_product|category_sales_per|
@@ -170,7 +196,7 @@ var df = purchaseEventsDF
         )
 ```
 
-2. **What are the hours with the highest number of interactions?**
+### 3.2. What are the hours with the highest number of interactions?
 
 ```scala
 +----+-----------+--------+----------+--------+--------------+------------+------------------+
@@ -233,7 +259,8 @@ df = events2019DF
       )
       .orderBy(col("total").desc_nulls_last)
 ```
-3. **Products with the highest purchase recurrence per month**
+
+### 3.3. Products with the highest purchase recurrence per month
 ```scala
 +---+--------+----------+-------+----------+----------+---------+----------------+
 | No|   month|product_id|  brand|2-15 times|16-3 times|>30 times|total_recurrence|
@@ -330,7 +357,8 @@ df = events2019DF
       .where(col("rank")<=10)
       .orderBy(col("month").desc,col("rank"))
 ```
-4. **How do sales of the most selling products evolve each month?**
+
+### 3.4. How do sales of the most selling products evolve each month?
 ```scala
 +----------+-------+--------------+--------------+--------------+--------------+--------------+--------------+-------------------+
 |product_id|  brand|     Oct_total|Oct_percentage|     Nov_total|Nov_percentage|     Dec_total|Dec_percentage|total_sales_product|
@@ -393,8 +421,8 @@ df = purchaseEventsDF
       .limit(20)
 ```
 
-5. **What is the day with the most sales revenue? And how much does it vary from the average daily sales?**
-  - Sales variability measures per date
+### 3.5. What is the day with the most sales revenue? And how much does it vary from the average daily sales?
+   - Sales variability measures per date
 ```scala
 +----------------+----------------+----------------+----------------+---------------+---------------+
 |       min_sales|       max_sales|     range_sales|       avg_sales|         stddev|coefficient_var|
@@ -492,7 +520,8 @@ df = salesPerDateDF
       .orderBy(col("sales").desc)
       .limit(20)
 ```
-6. **Interactions avg according to days of the week**
+
+### 3.6. Interactions avg according to days of the week
 ```scala
 +---------+--------------+------------+----------+--------+----------+--------+------------------+
 |      day|purchase_count|purchase_avg|cart_count|cart_avg|view_count|view_avg|total_interactions|
@@ -533,7 +562,7 @@ df = events2019DF
       .orderBy(col("purchase_count").desc_nulls_last)
 ```
 
-7. **How do the prices of the best-selling products vary?**
+### 3.7. How do the prices of the best-selling products vary?
 ```scala
 +----------+-------+--------------+----------+--------+-------+---------------+
 |product_id|  brand|   total_sales|       avg|   range| stddev|coefficient_var|
@@ -593,7 +622,11 @@ df = purchaseEventsDF
       .orderBy(col("sales_product").desc)
       .limit(20)
 ```
+
 ## 4. Project structure
+
+-----------------------
+
 The solution is composed of two objects ([Reader](./src/main/scala/Reader.scala) and [InsightsGenerator](./src/main/scala/InsightsGenerator.scala)) that host the functions used to start the application from the object [Main](./src/main/scala/Main.scala).
 
 - ``Rader.scala``. Within this, the only Spark session used in the application and the definition of the data schema is created, in addition, it continues the functions to read the data, create a dataframe and generate a sample.
@@ -681,4 +714,9 @@ def generateInsights(path: String): String = {
     else args(0) //else return the original path
 ```
 ## 5. Challenges during development
+
+------------------------------------
+
 ## 6. Comments
+
+--------------
