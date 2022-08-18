@@ -10,8 +10,6 @@ Data such as the most purchased brands and products, the days of the week with t
 
 ## 1. Dataset Description
 
-------------------------------
-
 ### 1.1 Source and description
 
 The Dataset used contains a total of 177,493,621 records, segmented into three files in csv format, one for each month between October and December 2019. You can consult part of the files published in [Kaggle](https://www.kaggle.com/datasets/mkechinov/ecommerce-behavior-data-from-multi-category-store) and the rest have been shared via [Google Drvie](https://drive.google.com/drive/folders/1Nan8X33H8xrXS5XhCKZmSpClFTCJsSpE) by [Michael Kechinov](https://www.linkedin.com/in/mkechinov/?originalSubdomain=ru)
@@ -111,26 +109,51 @@ The process to clean the data is done within the ``generateSample`` function whi
 
 ## 2. How to execute the solution?
 
-----------------------------------
-
 ### 2.1 Arguments
 - ``path``: The path directory of the files in csv format to read as the original dataset or a previously cleaned sample.
 - ``isSample``: It can be ``true`` or ``false`` and defines whether the path corresponds to a clean sample or the original dataset directory. If it is ``false`` the application execute a process to clean the data and get a 30% sample, prior to the report generation processes.
 
 ### 2.2 Execution
-- **Local**: With a local installation of spark:
+- **Local mode**
+
+  With a local installation of spark:
 ```shell
-> spark-submit --master local[*] ./target/scala-2.13/sparkpractice_2.13-0.3.0.jar <path> <isSample>
+spark-submit --master local[*] ./target/scala-2.13/sparkpractice_2.13-0.3.0.jar <path> <isSample>
 ```
-- **Docker Cluster**: With the docker configuration of the RTJVM course:
-```shell
-> 
-```
+- **Spark Cluster with docker**
+
+  Using the [configuration](./spark-cluster) of the RTJVM course:
+  
+  1. Copy the .jar file to *spark-cluster/apps*
+  
+  2. Copy the dataset or sample files to *spark-cluster/data*
+  
+  3. In a shell or terminal, go to the *spark-cluster* directory, and build the images with the next commands:
+  ```shell
+  docker build -t spark-base:latest ./docker/base
+  docker build -t spark-master:latest ./docker/spark-master
+  docker build -t spark-worker:latest ./docker/spark-worker
+  docker build -t spark-submit:latest ./docker/spark-submit
+  ```
+  
+  4. Start the services inside the docker-compose.yml file, with 3 workers:
+  ```shell
+  docker-compose up -d --scale spark-worker=3
+  ```
+
+  5. Exec the spark-master container:
+  ```shell
+  docker exec -it spark-cluster_spark-master_1 bash
+  ```
+  
+  6. Inside the container, you can send the application via spark-submit:
+  ```shell
+  ./bin/spark-submit --deploy-mode client --master spark://<container-identifier>:7077 \
+  --verbose --supervisor /opt/spark-apps/sparkpractice_2.13-0.3.0.jar opt/spark-data/ <isSample>
+  ```
 
 
 ## 3. Dataset Insights and their reports 
-
------------------------------------------
 
 ### 3.1. What are the best-selling product categories (according to the number of events *"purchase"*)?
 ```scala
@@ -624,9 +647,6 @@ df = purchaseEventsDF
 ```
 
 ## 4. Project structure
-
------------------------
-
 The solution is composed of two objects ([Reader](./src/main/scala/Reader.scala) and [InsightsGenerator](./src/main/scala/InsightsGenerator.scala)) that host the functions used to start the application from the object [Main](./src/main/scala/Main.scala).
 
 - ``Rader.scala``. Within this, the only Spark session used in the application and the definition of the data schema is created, in addition, it continues the functions to read the data, create a dataframe and generate a sample.
@@ -713,10 +733,7 @@ def generateInsights(path: String): String = {
     if (!args(1).toBoolean) generateSample(args(0), "*.csv",0.3) 
     else args(0) //else return the original path
 ```
+
 ## 5. Challenges during development
 
-------------------------------------
-
 ## 6. Comments
-
---------------
