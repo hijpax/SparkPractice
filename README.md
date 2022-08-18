@@ -734,6 +734,6 @@ def generateInsights(path: String): String = {
     else args(0) //else return the original path
 ```
 
-## 5. Challenges during development
+<!--## 5. Challenges during development
 
-## 6. Comments
+## 6. Comments-->
